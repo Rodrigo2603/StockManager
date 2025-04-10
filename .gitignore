@@ -1,0 +1,28 @@
+## Ignore arquivos e pastas geradas automaticamente pelo .NET
+
+bin/
+obj/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/
+
+# arquivos de configuração de IDE
+.idea/
+*.sln.ide
+
+# arquivos de log
+*.log
+
+# senhas ou configs locais
+appsettings.Development.json
+appsettings.Local.json
+appsettings.json
+
+# migrations temporárias (opcional — cuidado!)
+# Migrations/
+
+# pacote nuget
+*.nupkg
