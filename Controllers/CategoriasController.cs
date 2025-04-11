@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EstoqueAPI.Data;
 using EstoqueAPI.Models;
+using EstoqueAPI.DTOs;
 
 namespace EstoqueAPI.Controllers;
 
@@ -17,32 +18,65 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Categoria>>> GetCategorias()
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategorias()
     {
-        return await _context.Categorias.ToListAsync();
+        var categorias = await _context.Categorias
+            .Select(c => new CategoriaDTO
+            {
+                Id = c.Id,
+                Nome = c.Nome
+            })
+            .ToListAsync();
+
+        return Ok(categorias);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Categoria>> GetCategoria(int id)
+    public async Task<ActionResult<CategoriaDTO>> GetCategoria(int id)
     {
         var categoria = await _context.Categorias.FindAsync(id);
-        return categoria is null ? NotFound() : Ok(categoria);
+
+        if (categoria is null)
+            return NotFound();
+
+        var categoriaDto = new CategoriaDTO
+        {
+            Id = categoria.Id,
+            Nome = categoria.Nome
+        };
+
+        return Ok(categoriaDto);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Categoria>> CreateCategoria(Categoria categoria)
+    public async Task<ActionResult<CategoriaDTO>> CreateCategoria(CreateCategoriaDTO dto)
     {
+        var categoria = new Categoria
+        {
+            Nome = dto.Nome
+        };
+
         _context.Categorias.Add(categoria);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetCategoria), new { id = categoria.Id }, categoria);
+
+        var categoriaDto = new CategoriaDTO
+        {
+            Id = categoria.Id,
+            Nome = categoria.Nome
+        };
+
+        return CreatedAtAction(nameof(GetCategoria), new { id = categoria.Id }, categoriaDto);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCategoria(int id, Categoria categoria)
+    public async Task<IActionResult> UpdateCategoria(int id, UpdateCategoriaDTO categoriaDto)
     {
-        if (id != categoria.Id) return BadRequest();
+        var categoria = await _context.Categorias.FindAsync(id);
+        if (categoria is null)
+            return NotFound();
 
-        _context.Entry(categoria).State = EntityState.Modified;
+        categoria.Nome = categoriaDto.Nome;
+
         await _context.SaveChangesAsync();
         return NoContent();
     }
@@ -50,8 +84,15 @@ public class CategoriasController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCategoria(int id)
     {
-        var categoria = await _context.Categorias.FindAsync(id);
-        if (categoria is null) return NotFound();
+        var categoria = await _context.Categorias
+            .Include(c => c.Produtos)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (categoria is null)
+            return NotFound();
+
+        if (categoria.Produtos != null && categoria.Produtos.Any())
+            return BadRequest("Não é possível excluir uma categoria que possui produtos vinculados.");
 
         _context.Categorias.Remove(categoria);
         await _context.SaveChangesAsync();

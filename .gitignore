@@ -16,13 +16,13 @@ obj/
 # arquivos de log
 *.log
 
+# migrations
+Migrations/
+
 # senhas ou configs locais
 appsettings.Development.json
 appsettings.Local.json
 appsettings.json
-
-# migrations temporárias (opcional — cuidado!)
-# Migrations/
 
 # pacote nuget
 *.nupkg

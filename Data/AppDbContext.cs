@@ -16,6 +16,16 @@ public class AppDbContext : DbContext
             .HasIndex(c => c.Nome)
             .IsUnique();
 
+        modelBuilder.Entity<Produto>()
+            .HasIndex(p => p.Nome)
+            .IsUnique();
+
+        modelBuilder.Entity<Produto>()
+            .HasOne(p => p.Categoria)
+            .WithMany(c => c.Produtos)
+            .HasForeignKey(p => p.CategoriaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         base.OnModelCreating(modelBuilder);
     }
 }

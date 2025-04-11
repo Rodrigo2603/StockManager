@@ -36,29 +36,69 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Produto>> GetProduto(int id)
+    public async Task<ActionResult<ProdutoDTO>> GetProduto(int id)
     {
         var produto = await _context.Produtos
             .Include(p => p.Categoria)
             .FirstOrDefaultAsync(p => p.Id == id);
 
-        return produto is null ? NotFound() : Ok(produto);
+        if (produto is null)
+            return NotFound();
+
+        var produtoDto = new ProdutoDTO
+        {
+            Id = produto.Id,
+            Nome = produto.Nome,
+            Preco = produto.Preco,
+            Quantidade = produto.Quantidade,
+            CategoriaNome = produto.Categoria != null ? produto.Categoria.Nome : "Sem categoria"
+        };
+
+        return Ok(produtoDto);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Produto>> CreateProduto(Produto produto)
+    public async Task<ActionResult<ProdutoDTO>> CreateProduto(CreateProdutoDTO dto)
     {
+        var produto = new Produto
+        {
+            Nome = dto.Nome,
+            Preco = dto.Preco,
+            Quantidade = dto.Quantidade,
+            CategoriaId = dto.CategoriaId
+        };
+
         _context.Produtos.Add(produto);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetProduto), new { id = produto.Id }, produto);
+
+        // Carrega a categoria para preencher o nome corretamente no DTO de retorno
+        await _context.Entry(produto).Reference(p => p.Categoria).LoadAsync();
+
+        var produtoDto = new ProdutoDTO
+        {
+            Id = produto.Id,
+            Nome = produto.Nome,
+            Preco = produto.Preco,
+            Quantidade = produto.Quantidade,
+            CategoriaNome = produto.Categoria != null ? produto.Categoria.Nome : "Sem categoria"
+        };
+
+        return CreatedAtAction(nameof(GetProduto), new { id = produto.Id }, produtoDto);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduto(int id, Produto produto)
+    public async Task<IActionResult> UpdateProduto(int id, UpdateProdutoDTO dto)
     {
-        if (id != produto.Id) return BadRequest();
+        var produto = await _context.Produtos.FindAsync(id);
+        if (produto is null)
+            return NotFound();
 
-        _context.Entry(produto).State = EntityState.Modified;
+        // Atualiza os campos manualmente
+        produto.Nome = dto.Nome;
+        produto.Preco = dto.Preco;
+        produto.Quantidade = dto.Quantidade;
+        produto.CategoriaId = dto.CategoriaId;
+
         await _context.SaveChangesAsync();
         return NoContent();
     }
