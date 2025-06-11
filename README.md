@@ -21,12 +21,12 @@ API REST desenvolvida em ASP.NET Core para gerenciamento de produtos e categoria
 
 ## ⚙️ Configuração
 
-Crie um arquivo `appsettings.Development.json` com sua string de conexão:
+Crie um arquivo `appsettings.json` com sua string de conexão (um template já foi adicionado ao repositório):
 
 ```json
 {
   "ConnectionStrings": {
-    "Default": "Host=localhost;Port=5432;Database=estoque_db;Username=postgres;Password=senha"
+    "Default": "Host=localhost;Port=5432;Database=<database_name>;Username=<your_username>;Password=<your_password>"
   }
 }
 ```
