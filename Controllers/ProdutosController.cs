@@ -86,6 +86,37 @@ public class ProdutosController : ControllerBase
         return CreatedAtAction(nameof(GetProduto), new { id = produto.Id }, produtoDto);
     }
 
+    [HttpPost("repor/{id}")]
+    public async Task<ActionResult<ProdutoDTO>> ReporEstoque(int id, [FromBody] ReporProdutoDTO dto)
+    {
+        var produto = await _context.Produtos.FindAsync(id);
+        
+        if (produto == null)
+        {
+            return NotFound("Produto não encontrado");
+        }
+
+        produto.Quantidade += dto.Quantidade;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            await _context.Entry(produto).Reference(p => p.Categoria).LoadAsync();
+            return Ok(new ProdutoDTO
+            {
+                Id = produto.Id,
+                Nome = produto.Nome,
+                Preco = produto.Preco,
+                Quantidade = produto.Quantidade,
+                CategoriaNome = produto.Categoria != null ? produto.Categoria.Nome : "Sem categoria"
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro ao tentar repor estoque: {ex.Message}");
+        }
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduto(int id, UpdateProdutoDTO dto)
     {

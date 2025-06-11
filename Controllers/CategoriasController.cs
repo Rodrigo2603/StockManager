@@ -56,6 +56,14 @@ public class CategoriasController : ControllerBase
             Nome = dto.Nome
         };
 
+        var categoriaExistente = await _context.Categorias
+            .FirstOrDefaultAsync(c => c.Nome == dto.Nome);
+
+        if (categoriaExistente != null)
+        {
+            return Conflict("Categoria já existe.");
+        }
+
         _context.Categorias.Add(categoria);
         await _context.SaveChangesAsync();
 

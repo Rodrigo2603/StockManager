@@ -10,6 +10,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Produto> Produtos => Set<Produto>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
+    public DbSet<Venda> Vendas { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Categoria>()

@@ -16,9 +16,6 @@ obj/
 # arquivos de log
 *.log
 
-# migrations
-Migrations/
-
 # senhas ou configs locais
 appsettings.Development.json
 appsettings.Local.json
